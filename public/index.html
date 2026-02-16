@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Feed</title>
+    <style>
+        /* Базовые настройки */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fafafa;
+            color: #2c3e50;
+        }
+
+        h1 {
+            font-weight: 300;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #34495e;
+            letter-spacing: -0.5px;
+        }
+
+        h2 {
+            font-weight: 400;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #7f8c8d;
+            letter-spacing: 1px;
+        }
+
+        /* Основной контейнер */
+        .container {
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Левая колонка — посты */
+        .posts {
+            flex: 2;
+        }
+
+        /* Правая колонка — логи */
+        .logs {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            max-height: 600px;
+            overflow-y: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid #edf2f7;
+        }
+
+        .logs h3 {
+            font-weight: 400;
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Карточка поста */
+        .post {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border: 1px solid #edf2f7;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .post:hover {
+            border-color: #cbd5e0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        .post .author {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .post .text {
+            color: #34495e;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        /* Блок с лайками и кнопкой */
+        .post-footer {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .likes {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .likes .heart {
+            font-size: 1.1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .post.liked .heart {
+            color: #e53e3e;
+            transform: scale(1.1);
+        }
+
+        /* Кнопка лайка */
+        .like-button {
+            background: none;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .like-button:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+        }
+
+        .post.liked .like-button {
+            border-color: #fed7d7;
+            background: #fff5f5;
+            color: #e53e3e;
+        }
+
+        /* Форма создания поста */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #a0aec0;
+            box-shadow: 0 0 0 3px rgba(160,174,192,0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group button {
+            background: white;
+            color: #2c3e50;
+            border: 1px solid #e2e8f0;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .form-group button:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+        }
+
+        /* Добавьте в раздел <style> */
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .logs-header h3 {
+            font-weight: 400;
+            color: #4a5568;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .clear-logs-btn {
+            background: none;
+            border: 1px solid #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            color: #718096;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .clear-logs-btn:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+            color: #4a5568;
+        }
+
+        /* Логи */
+        .log {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f7fafc;
+            border-left: 3px solid #cbd5e0;
+            font-size: 0.85rem;
+            color: #4a5568;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .log:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #a0aec0;
+            font-size: 0.95rem;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #edf2f7;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 700px) {
+            .container {
+                flex-direction: column;
+            }
+
+            body {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<h1>Activity Feed</h1>
+
+<div class="container">
+    <div class="posts">
+        <h2>Новый пост</h2>
+        <div class="form-group">
+            <input type="text" id="author" placeholder="ваше имя" value="user" >
+        </div>
+        <div class="form-group">
+            <textarea id="text" placeholder="что у вас нового?" rows="3" ></textarea>
+        </div>
+        <div class="form-group">
+            <button onclick="createPost()">Опубликовать</button>
+        </div>
+
+        <h2>Лента</h2>
+        <div id="posts-container"></div>
+    </div>
+
+    <div class="logs">
+        <div class="logs-header">
+            <h3>События</h3>
+            <button class="clear-logs-btn" id="clearLogsBtn">Очистить</button>
+        </div>
+        <div id="logs"></div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  // Конфигурация
+  const USER_ID = 'user_' + Math.random().toString(36).slice(2, 9); // Уникальный ID для сессии
+
+  const socket = io();
+  const logsContainer = document.getElementById('logs');
+  const postsContainer = document.getElementById('posts-container');
+
+  // Логи
+  function addLog(message) {
+    const logElement = document.createElement('div');
+    logElement.className = 'log';
+    logElement.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+    logsContainer.appendChild(logElement);
+  }
+
+  // Загрузка постов
+  async function loadPosts() {
+    try {
+      const response = await fetch('http://localhost:4000/posts');
+      const posts = await response.json();
+      displayPosts(posts);
+    } catch (error) {
+      addLog(`❌ ошибка загрузки: ${error.message}`);
+    }
+  }
+
+  // Отображение постов
+  function displayPosts(posts) {
+    // Сортируем посты: новые сверху
+    const sortedPosts = [...posts].sort((a, b) =>
+      new Date(a.createdAt) - new Date(b.createdAt)
+    );
+
+    postsContainer.innerHTML = '';
+
+    sortedPosts.forEach(post => {
+      const userLiked = post.likedBy?.includes(USER_ID) || false;
+
+      const postElement = document.createElement('div');
+      postElement.className = `post ${userLiked ? 'liked' : ''}`;
+      postElement.id = `post-${post.id}`;
+
+      // Форматируем дату
+      const date = new Date(post.createdAt);
+      const timeString = date.toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      postElement.innerHTML = `
+        <div class="author">@${post.author} · ${timeString}</div>
+        <div class="text">${post.text}</div>
+        <div class="post-footer">
+            <span class="likes">
+                <span class="heart">${userLiked ? '❤️' : '🤍'}</span>
+                ${post.likes || 0}
+            </span>
+            <button class="like-button" onclick="likePost('${post.id}')">
+                ${userLiked ? 'убрать лайк' : 'лайк'}
+            </button>
+        </div>
+    `;
+
+      postsContainer.appendChild(postElement);
+    });
+  }
+
+  function clearLogs() {
+    logsContainer.innerHTML = '';
+    addLog('🗑️ логи очищены');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const clearBtn = document.getElementById('clearLogsBtn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', clearLogs);
+    }
+  });
+
+  // Создание поста
+  async function createPost() {
+    const author = document.getElementById('author').value;
+    const text = document.getElementById('text').value;
+
+    if (!author || !text) {
+      addLog('⚠️ заполните все поля');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:4000/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ author, text })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'ошибка создания');
+      }
+
+      document.getElementById('textarea').value = '';
+      addLog(`✅ пост опубликован`);
+
+    } catch (error) {
+      addLog(`❌ ошибка: ${error.message}`);
+    }
+  }
+
+  // Лайк / убрать лайк
+  async function likePost(postId) {
+    try {
+      const response = await fetch(`http://localhost:4000/posts/${postId}/like`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': USER_ID
+        },
+        body: JSON.stringify({ userId: USER_ID })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'ошибка');
+      }
+
+      // Сервер отправит обновление через socket, не нужно обновлять вручную
+      addLog(`👍 действие с лайком выполнено`);
+
+    } catch (error) {
+      addLog(`❌ ошибка: ${error.message}`);
+    }
+  }
+
+  // Socket.IO обработчики
+  socket.on('connect', () => {
+    addLog(`🔌 подключено (id: ${socket.id})`);
+    loadPosts();
+  });
+
+  socket.on('disconnect', (reason) => {
+    addLog(`🔌 отключено: ${reason}`);
+  });
+
+  socket.on('new-post', (post) => {
+    addLog(`📝 новый пост от @${post.author}`);
+    const postElement = createPostElement(post);
+    postsContainer.prepend(postElement);
+  });
+
+  socket.on('post-updated', (updatedPost) => {
+    const userLiked = updatedPost.likedBy?.includes(USER_ID) || false;
+    addLog(`❤️ пост ${updatedPost.id} обновлен (лайков: ${updatedPost.likes})`);
+
+    // Обновляем конкретный пост
+    const postElement = document.getElementById(`post-${updatedPost.id}`);
+    if (postElement) {
+      const likesSpan = postElement.querySelector('.likes');
+      const heartSpan = postElement.querySelector('.heart');
+      const button = postElement.querySelector('.like-button');
+
+      likesSpan.innerHTML = `<span class="heart">${userLiked ? '❤️' : '🤍'}</span> ${updatedPost.likes}`;
+      button.textContent = userLiked ? 'убрать лайк' : 'лайк';
+
+      if (userLiked) {
+        postElement.classList.add('liked');
+      } else {
+        postElement.classList.remove('liked');
+      }
+    }
+  });
+
+  // Хелпер для создания элемента поста
+  function createPostElement(post) {
+    const userLiked = post.likedBy?.includes(USER_ID) || false;
+    const date = new Date(post.createdAt);
+    const timeString = date.toLocaleTimeString('ru-RU', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const div = document.createElement('div');
+    div.className = `post ${userLiked ? 'liked' : ''}`;
+    div.id = `post-${post.id}`;
+    div.innerHTML = `
+                <div class="author">@${post.author} · ${timeString}</div>
+                <div class="text">${post.text}</div>
+                <div class="post-footer">
+                    <span class="likes">
+                        <span class="heart">${userLiked ? '❤️' : '🤍'}</span>
+                        ${post.likes || 0}
+                    </span>
+                    <button class="like-button" onclick="likePost('${post.id}')">
+                        ${userLiked ? 'убрать лайк' : 'лайк'}
+                    </button>
+                </div>
+            `;
+    return div;
+  }
+</script>
+</body>
+</html>

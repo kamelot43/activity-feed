@@ -1,5 +1,11 @@
 const express = require('express');
+const { createServer } = require('node:http');
+const { Server } = require('socket.io');
+
 const app = express();
+const server = createServer(app);
+
+const io = new Server(server);
 
 app.use(express.json());
 
@@ -9,6 +15,7 @@ const posts = [
     text: 'Первый пост!',
     author: 'user1',
     likes: 0,
+    likedBy: [],
     createdAt: new Date()
   },
   {
@@ -16,6 +23,7 @@ const posts = [
     text: 'Изучаю Node.js',
     author: 'user2',
     likes: 3,
+    likedBy: ['user3', 'user4', 'user5'],
     createdAt: new Date()
   }
 ];
@@ -49,6 +57,16 @@ const validatePost = (req, res, next) => {
   next();
 }
 
+app.use(express.static('public'));
+
+io.on('connection', (socket) => {
+  console.log(`✅ User connected (id: ${socket.id})`);
+
+  socket.on('disconnect', (reason) => {
+    console.log(`❌ User disconnected (id: ${socket.id}, reason: ${reason})`);
+  });
+});
+
 app.get('/posts', (req, res) => {
   res.json(posts);
 })
@@ -71,10 +89,15 @@ app.post('/posts', validatePost, (req, res) => {
     text,
     author,
     likes: 0,
+    likedBy: [],
     createdAt: new Date()
   };
 
   posts.push(newPost);
+
+  io.emit('new-post', newPost);
+  console.log(`📢 Уведомление о новом посте отправлено всем (id: ${newPost.id})`);
+
   res.status(201).json(newPost);
 })
 
@@ -85,8 +108,23 @@ app.put('/posts/:id/like', (req, res) => {
     return res.status(404).json({ error: 'Пост не найден'});
   }
 
-  post.likes += 1;
-  res.json(post);
+  const userId = req.headers['x-user-id'] || req.body.userId || 'anonymous';
+  const userLiked = post.likedBy.includes(userId);
+
+  if (userLiked) {
+    post.likedBy = post.likedBy.filter(id => id !== userId);
+    post.likes -= 1;
+  } else {
+    post.likedBy.push(userId);
+    post.likes += 1;
+  }
+
+  io.emit('post-updated', post);
+
+  res.json({
+    ...post,
+    userLiked: !userLiked
+  });
 });
 
 app.use((req, res) => {
@@ -99,8 +137,9 @@ app.use((req, res) => {
 
 const PORT = 4000;
 
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на http://localhost:${PORT}`)
-})
+server.listen(PORT, () => {
+  console.log(`🚀 HTTP сервер запущен на http://localhost:${PORT}`);
+  console.log(`🔌 WebSocket сервер (Socket.IO) запущен и слушает тот же порт`);
+});
 
 
