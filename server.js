@@ -89,6 +89,14 @@ app.put('/posts/:id/like', (req, res) => {
   res.json(post);
 });
 
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Маршрут не найден',
+    path: req.url,
+    method: req.method
+  });
+});
+
 const PORT = 4000;
 
 app.listen(PORT, () => {
