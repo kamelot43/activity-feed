@@ -74,26 +74,30 @@ const resolvers = {
         createdAt: new Date().toISOString()
       };
       posts.push(newPost);
-
-      // ✅ Включаем Socket.IO уведомления
       io.emit('new-post', newPost);
-
       return newPost;
     },
-    likePost: (parent, args) => {
+    
+    likePost: (parent, args, context) => {
       const post = posts.find(p => p.id === args.id);
-
-      if (!post) {
-        throw new Error('Пост не найден');
+      if (!post) throw new Error('Пост не найден');
+      
+      // Получаем userId (в GraphQL нужно передавать через headers или context)
+      const userId = context.userId || 'graphql-user'; // пока так
+      
+      const userLiked = post.likedBy.includes(userId);
+      
+      if (userLiked) {
+        // Убираем лайк
+        post.likedBy = post.likedBy.filter(id => id !== userId);
+        post.likes -= 1;
+      } else {
+        // Добавляем лайк
+        post.likedBy.push(userId);
+        post.likes += 1;
       }
-
-      // В GraphQL пока просто увеличиваем лайк (без проверки userId)
-      post.likes += 1;
-      post.likedBy.push('graphql-user');
-
-      // ✅ Включаем Socket.IO уведомления
+      
       io.emit('post-updated', post);
-
       return post;
     }
   }
@@ -126,7 +130,11 @@ async function startApolloServer() {
   app.use(
     '/graphql',
     express.json(),
-    expressMiddleware(apolloServer)
+    expressMiddleware(apolloServer, {
+      context: async ({ req }) => ({
+        userId: req.headers['x-user-id'] || 'anonymous'
+      })
+    })
   );
 
   // 404 обработчик (только для несуществующих маршрутов)
