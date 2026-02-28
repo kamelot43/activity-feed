@@ -75,57 +75,29 @@ const resolvers = {
       };
       posts.push(newPost);
 
-      // Сохраняем Socket.IO уведомление (пока закомментируем)
-      // io.emit('new-post', newPost);
+      // ✅ Включаем Socket.IO уведомления
+      io.emit('new-post', newPost);
 
       return newPost;
     },
     likePost: (parent, args) => {
       const post = posts.find(p => p.id === args.id);
 
-      if(!post) {
-        throw new Error('Пост не найден')
+      if (!post) {
+        throw new Error('Пост не найден');
       }
 
+      // В GraphQL пока просто увеличиваем лайк (без проверки userId)
       post.likes += 1;
       post.likedBy.push('graphql-user');
 
-      // Сохраняем Socket.IO уведомление (пока закомментируем)
-      // io.emit('post-updated', post);
+      // ✅ Включаем Socket.IO уведомления
+      io.emit('post-updated', post);
 
       return post;
     }
   }
-}
-
-const validatePost = (req, res, next) => {
-  const {text, author} = req.body;
-
-  const errors = [];
-
-  if (!text) errors.push('Поле "text" обязательно');
-  if (!author) errors.push('Поле "author" обязательно');
-
-
-  if (text) {
-    if (text.length > 200) {
-      errors.push(`Текст слишком длинный. Максимум 200 символов, сейчас ${text.length}`)
-    }
-
-    if(text.trim().length === 0) {
-      errors.push('Текст не может состоять из одних пробелов');
-    }
-  }
-
-  if(errors.length > 0) {
-    return res.status(400).json({
-      error: 'Ошибка валидации',
-      details: errors
-    })
-  }
-
-  next();
-}
+};
 
 app.use(express.static('public'));
 
@@ -136,67 +108,6 @@ io.on('connection', (socket) => {
     console.log(`❌ User disconnected (id: ${socket.id}, reason: ${reason})`);
   });
 });
-
-app.get('/posts', (req, res) => {
-  res.json(posts);
-})
-
-app.get('/posts/:id', (req, res) => {
-  const post = posts.find(post => post.id === req.params.id);
-
-  if (!post) {
-    return res.status(404).json({ error: 'Пост не найден'})
-  }
-
-  res.json(post);
-})
-
-app.post('/posts', validatePost, (req, res) => {
-  const { text, author} = req.body;
-
-  const newPost = {
-    id: String(posts.length + 1),
-    text,
-    author,
-    likes: 0,
-    likedBy: [],
-    createdAt: new Date()
-  };
-
-  posts.push(newPost);
-
-  io.emit('new-post', newPost);
-  console.log(`📢 Уведомление о новом посте отправлено всем (id: ${newPost.id})`);
-
-  res.status(201).json(newPost);
-})
-
-app.put('/posts/:id/like', (req, res) => {
-  const post = posts.find(post => post.id === req.params.id);
-
-  if (!post) {
-    return res.status(404).json({ error: 'Пост не найден'});
-  }
-
-  const userId = req.headers['x-user-id'] || req.body.userId || 'anonymous';
-  const userLiked = post.likedBy.includes(userId);
-
-  if (userLiked) {
-    post.likedBy = post.likedBy.filter(id => id !== userId);
-    post.likes -= 1;
-  } else {
-    post.likedBy.push(userId);
-    post.likes += 1;
-  }
-
-  io.emit('post-updated', post);
-
-  res.json({
-    ...post,
-    userLiked: !userLiked
-  });
-});
-
 
 const PORT = 4000;
 
@@ -218,6 +129,7 @@ async function startApolloServer() {
     expressMiddleware(apolloServer)
   );
 
+  // 404 обработчик (только для несуществующих маршрутов)
   app.use((req, res) => {
     res.status(404).json({
       error: 'Маршрут не найден',
@@ -235,5 +147,3 @@ server.listen(PORT, () => {
   console.log(`🚀 HTTP сервер запущен на http://localhost:${PORT}`);
   console.log(`🔌 WebSocket сервер (Socket.IO) запущен и слушает тот же порт`);
 });
-
-
