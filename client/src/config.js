@@ -1,0 +1,1 @@
+export const USER_ID = 'user_' + Math.random().toString(36).slice(2, 9);

@@ -1,6 +1,7 @@
 const express = require('express');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
+const cors = require('cors'); 
 
 const { ApolloServer } = require('@apollo/server');
 const { ApolloServerPluginLandingPageLocalDefault } = require('@apollo/server/plugin/landingPage/default');
@@ -8,7 +9,19 @@ const { expressMiddleware } = require('@as-integrations/express5');
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server);
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 
 app.use(express.json());
 
@@ -54,7 +67,7 @@ const typeDefs = `#graphql
 
   type Mutation {
     addPost(text: String!, author: String!): Post!
-    likePost(id: ID!): Post!
+    likePost(id: ID!, userId: String!): Post! 
   }
 `;
 
@@ -83,7 +96,7 @@ const resolvers = {
       if (!post) throw new Error('Пост не найден');
       
       // Получаем userId (в GraphQL нужно передавать через headers или context)
-      const userId = context.userId || 'graphql-user'; // пока так
+      const userId = args.userId || context.userId || 'anonymous';
       
       const userLiked = post.likedBy.includes(userId);
       
