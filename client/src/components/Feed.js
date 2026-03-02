@@ -5,6 +5,7 @@ import Post from './Post';
 import { USER_ID } from '../config';
 import { useLogs } from '../context/LogContext';
 import { useSocketEvents } from '../hooks/useSocketEvents';
+import {sounds} from '../utils/sound';
 
 const FeedContainer = styled.div`
   background: white;
@@ -45,11 +46,13 @@ function Feed() {
   useSocketEvents({
     'new-post': (newPost) => {
       console.log('📢 Новый пост, перезапрашиваем...', newPost);
+      sounds.playNewPost();
       refetch();
       addLog(`📝 новый пост от @${newPost.author}`);
     },
     'post-updated': (updatedPost) => {
       console.log('❤️ Пост обновлен, перезапрашиваем...', updatedPost);
+      sounds.playLike();
       refetch();
       addLog(`❤️ лайк обновлен (пост ${updatedPost.id})`);
     }

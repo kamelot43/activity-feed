@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import { useLogs } from './LogContext';
+import { sounds } from '../utils/sound';
 
 const SocketContext = createContext();
 
@@ -24,6 +25,7 @@ export const SocketProvider = ({ children }) => {
       console.log('🔌 Socket connected:', socketInstance.id);
       setIsConnected(true);
       addLog(`🔌 подключено (id: ${socketInstance.id})`);
+      sounds.playConnect();
     });
 
     socketInstance.on('disconnect', (reason) => {

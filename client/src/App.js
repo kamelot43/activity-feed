@@ -4,6 +4,8 @@ import Feed from './components/Feed';
 import Logs from './components/Logs';
 import AddPostForm from './components/AddPostForm';
 import { LogProvider } from './context/LogContext';
+import { sounds } from './utils/sound';
+import { useState } from 'react';
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -41,7 +43,36 @@ const LeftColumn = styled.div`
   min-width: 0; /* предотвращает переполнение */
 `;
 
+const SoundButton = styled.button`
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  cursor: pointer;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 1000;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  }
+`;
+
 function App() {
+  const [soundEnabled, setSoundEnabled] = useState(true); 
+  const toggleSound = () => {
+    setSoundEnabled(!soundEnabled);
+    sounds.toggle(soundEnabled);
+  };
   return (
     <LogProvider>
       <SocketProvider>
@@ -57,6 +88,11 @@ function App() {
             </LeftColumn>
             <Logs />
           </Container>
+
+          <SoundButton onClick={toggleSound}>
+            {soundEnabled ? '🔊' : '🔇'}
+          </SoundButton>
+
         </AppContainer>
       </SocketProvider>
     </LogProvider>

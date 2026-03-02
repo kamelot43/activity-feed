@@ -12,7 +12,6 @@ export function addLog(message) {
     logElement.className = 'log';
     logElement.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
     logsContainer.appendChild(logElement);
-    logsContainer.scrollTop = logsContainer.scrollHeight;
 }
 
 export function clearLogs() {

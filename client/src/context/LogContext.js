@@ -26,10 +26,7 @@ export const LogProvider = ({ children }) => {
     addLog('🗑️ логи очищены');
   }, [addLog]);
 
-  // Автоскролл к последнему логу
-  useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [logs]);
+  
 
   const value = {
     logs,
