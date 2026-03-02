@@ -6,15 +6,14 @@ import { useLogs } from '../context/LogContext';
 const PostCard = styled.div`
   background: white;
   padding: 20px;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   border-radius: 12px;
   border: 1px solid #edf2f7;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 
   &:hover {
     border-color: #cbd5e0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
 `;
 

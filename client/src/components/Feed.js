@@ -6,35 +6,29 @@ import { USER_ID } from '../config';
 import { useLogs } from '../context/LogContext';
 import { useSocketEvents } from '../hooks/useSocketEvents';
 
-const PostsContainer = styled.div`
-  flex: 2;
+const FeedContainer = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 1px solid #edf2f7;
+`;
+
+const Title = styled.h2`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 20px;
+  letter-spacing: -0.3px;
 `;
 
 const LoadingState = styled.div`
   text-align: center;
-  padding: 40px 20px;
-  color: #a0aec0;
+  padding: 60px 20px;
+  color: #718096;
   font-size: 0.95rem;
-  background: white;
+  background: #f8fafc;
   border-radius: 12px;
-  border: 1px solid #edf2f7;
-  
-  &::after {
-    content: '';
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    margin-left: 10px;
-    border: 2px solid #a0aec0;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    vertical-align: middle;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
 `;
 
 const EmptyState = styled(LoadingState)`
@@ -61,8 +55,19 @@ function Feed() {
     }
   }, [refetch]);
 
-  if (loading && !data) return <LoadingState>Загрузка...</LoadingState>;
-  if (error) return <LoadingState>Ошибка: {error.message}</LoadingState>;
+  if (loading && !data) return (
+    <FeedContainer>
+      <Title>Лента</Title>
+      <LoadingState>Загрузка...</LoadingState>
+    </FeedContainer>
+  );
+  
+  if (error) return (
+    <FeedContainer>
+      <Title>Лента</Title>
+      <LoadingState>Ошибка: {error.message}</LoadingState>
+    </FeedContainer>
+  );
 
   const posts = data?.posts || [];
   const sortedPosts = [...posts].sort((a, b) => 
@@ -70,8 +75,8 @@ function Feed() {
   );
 
   return (
-    <PostsContainer>
-      <h2>Лента</h2>
+    <FeedContainer>
+      <Title>Лента</Title>
       {sortedPosts.map(post => (
         <Post 
           key={post.id} 
@@ -82,7 +87,7 @@ function Feed() {
       {sortedPosts.length === 0 && (
         <EmptyState>Пока нет постов</EmptyState>
       )}
-    </PostsContainer>
+    </FeedContainer>
   );
 }
 
